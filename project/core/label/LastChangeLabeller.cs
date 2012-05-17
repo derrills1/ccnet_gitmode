@@ -2,6 +2,7 @@ using System;
 using System.Text.RegularExpressions;
 using Exortech.NetReflector;
 using ThoughtWorks.CruiseControl.Core.Util;
+using System.Globalization;
 
 namespace ThoughtWorks.CruiseControl.Core.Label
 {
@@ -52,24 +53,43 @@ namespace ThoughtWorks.CruiseControl.Core.Label
         /// <returns>the new label</returns>
         public override string Generate(IIntegrationResult resultFromThisBuild)
         {
+            string changeNumber = "0";
+            string s = resultFromThisBuild.LastChangeNumber;
 
-            int changeNumber = 0;
-            if (int.TryParse(resultFromThisBuild.LastChangeNumber, out changeNumber))
+            switch (s)
             {
-                Log.Debug(
-                    string.Format("LastChangeNumber retrieved - {0}",
-                    changeNumber));
-            }
-            else
-            {
-                Log.Debug("LastChangeNumber defaulted to 0");
+                case null:
+                case "Unknown":
+                case "UNKNOWN":
+                    Log.Debug("LastChangeNumber defaulted to 0");
+                    break;                
+                default:
+                    Match match = Regex.Match(s, @"[0-9a-f]*", RegexOptions.IgnoreCase);
+                    if (match.Value != "")
+                    {
+                        Log.Debug(string.Format("resultFromThisBuild.LastChangeNumber retrieved in HEX format - {0}", s));
+                        changeNumber = s;
+                        Log.Debug(string.Format("LastChangeNumber retrieved - {0}", changeNumber));                        
+                    }
+                    else
+                    {
+                        match = Regex.Match(s, @"[0-9]*", RegexOptions.IgnoreCase);
+                        if (match.Value != "")
+                        {
+                            Log.Debug(string.Format("resultFromThisBuild.LastChangeNumber retrieved in Decimal format - {0}", s));
+                            changeNumber = s;
+                            Log.Debug(string.Format("LastChangeNumber retrieved - {0}", changeNumber));                            
+                        }else
+                            Log.Debug("LastChangeNumber defaulted to '0' because the LastChangeNumber is text: {0}", s);
+                    }
+                    break;                        
             }
 
             IntegrationSummary lastIntegration = resultFromThisBuild.LastIntegration;
 
             string firstSuffix = AllowDuplicateSubsequentLabels ? string.Empty : "." + INITIAL_SUFFIX_NUMBER.ToString();
 
-            if (changeNumber != 0)
+            if (changeNumber != "0")
             {
                 return LabelPrefix + changeNumber + firstSuffix;
             }

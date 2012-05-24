@@ -14,7 +14,7 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
 				"Commit:(?<Hash>[a-z0-9]{40})(?:\n|\r\n)Time:(?<Time>.+?)(?:\n|\r\n)Author:(?<Author>.+?)(?:\n|\r\n)E-Mail:(?<Mail>.+?)(?:\n|\r\n)Message:(?<Message>.*?)(?:\n|\r\n)Changes:(?:\n|\r\n)(?<Changes>.*?)((?=Commit:[a-z0-9]{40})|$)",
 				RegexOptions.Compiled | RegexOptions.Singleline);
 
-		private static readonly Regex changeList = new Regex("(?<Type>[A-Z]{1})\s+(?<FileName>.*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex changeList = new Regex(@"(?<Type>[A-Z]{1})\s+(?<FileName>.*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		/// <summary>
 		/// Parse and filter the supplied modifications.  The position of each modification in the list is used as the ChangeNumber.

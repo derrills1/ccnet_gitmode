@@ -11,10 +11,10 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
 	{
 		private static readonly Regex modificationList =
 			new Regex(
-				"Commit:(?<Hash>[a-z0-9]{40})(?:\n|\r\n)Time:(?<Time>.+?)(?:\n|\r\n)Author:(?<Author>.+?)(?:\n|\r\n)E-Mail:(?<Mail>.+?)(?:\n|\r\n)Message:(?<Message>.*?)(?:\n|\r\n)Changes:(?:\n|\r\n)(?<Changes>.*?)(?:(?:\n|\r\n){2}|(?:\n|\r\n)$)",
+				"Commit:(?<Hash>[a-z0-9]{40})(?:\n|\r\n)Time:(?<Time>.+?)(?:\n|\r\n)Author:(?<Author>.+?)(?:\n|\r\n)E-Mail:(?<Mail>.+?)(?:\n|\r\n)Message:(?<Message>.*?)(?:\n|\r\n)Changes:(?:\n|\r\n)(?<Changes>.*?)((?=Commit:[a-z0-9]{40})|$)",
 				RegexOptions.Compiled | RegexOptions.Singleline);
 
-		private static readonly Regex changeList = new Regex("(?<Type>[A-Z]{1})\t(?<FileName>.*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+		private static readonly Regex changeList = new Regex("(?<Type>[A-Z]{1})\s+(?<FileName>.*)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
 		/// <summary>
 		/// Parse and filter the supplied modifications.  The position of each modification in the list is used as the ChangeNumber.
@@ -64,23 +64,43 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
 				return result;
 			}
 
-			foreach (Match change in changeList.Matches(changes))
-			{
-				Modification mod = new Modification();
-				mod.ChangeNumber = hash;
-				mod.Comment = comment;
-				mod.EmailAddress = emailAddress;
-				mod.ModifiedTime = modifiedTime;
-				mod.UserName = username;
+			MatchCollection file_matches = changeList.Matches(changes);
+            if (file_matches.Count != 0)
+            {
+                foreach (Match change in file_matches)
+                {
+                    Modification mod = new Modification();
+                    mod.ChangeNumber = hash;
+                    mod.Comment = comment;
+                    mod.EmailAddress = emailAddress;
+                    mod.ModifiedTime = modifiedTime;
+                    mod.UserName = username;
 
-				mod.Type = GetModificationType(change.Groups["Type"].Value);
+                    mod.Type = GetModificationType(change.Groups["Type"].Value);
 
-				string fullFilePath = change.Groups["FileName"].Value.TrimEnd('\r', '\n');
-				mod.FileName = GetFileFromPath(fullFilePath);
-				mod.FolderName = GetFolderFromPath(fullFilePath);
+                    string fullFilePath = change.Groups["FileName"].Value.TrimEnd('\r', '\n');
+                    mod.FileName = GetFileFromPath(fullFilePath);
+                    mod.FolderName = GetFolderFromPath(fullFilePath);
 
-				result.Add(mod);
-			}
+                    result.Add(mod);
+                }
+            }
+            else
+            {
+                Modification mod = new Modification();
+                mod.ChangeNumber = hash;
+                mod.Comment = comment;
+                mod.EmailAddress = emailAddress;
+                mod.ModifiedTime = modifiedTime;
+                mod.UserName = username;
+
+                mod.Type = GetModificationType("m");
+                
+                mod.FileName = "Specific commit. No file changes.";
+                mod.FolderName = "";
+
+                result.Add(mod);
+            }
 
 			return result;
 		}

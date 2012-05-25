@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System;
 using Exortech.NetReflector;
 using ThoughtWorks.CruiseControl.Core.Util;
 
@@ -246,7 +247,13 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
 			}
 
 			// parse git log history
-			return ParseModifications(GitLogHistory(Branch, from, to), from.StartTime, to.StartTime);
+            Modification[] modifications = ParseModifications(GitLogHistory(Branch, from, to), from.StartTime, to.StartTime);
+            if (modifications.Length == 0)
+            {
+                from.StartTime = DateTime.Parse( GitLogOriginHashDateTime( Branch, to));
+                modifications = ParseModifications(GitLogHistory(Branch, from, to), from.StartTime, to.StartTime);
+            }   
+            return modifications;
 		}
 
 		public override void GetSource(IIntegrationResult result)
@@ -415,6 +422,22 @@ namespace ThoughtWorks.CruiseControl.Core.Sourcecontrol
 			buffer.AddArgument("--pretty=format:\"%H\"");
 			return Execute(NewProcessInfo(buffer.ToString(), result)).StandardOutput.Trim();
 		}
+
+        /// <summary>
+        /// Get the date and iime of the latest commit in the remote repository
+        /// </summary>
+        /// <param name="branchName">Name of the branch.</param>
+        /// <param name="result">IIntegrationResult of the current build.</param>
+        private string GitLogOriginHashDateTime(string branchName, IIntegrationResult result)
+        {
+            ProcessArgumentBuilder buffer = new ProcessArgumentBuilder();
+            buffer.AddArgument("log");
+            buffer.AddArgument(string.Concat("origin/", branchName));
+            buffer.AddArgument("--date-order");
+            buffer.AddArgument("-1");
+            buffer.AddArgument("--pretty=format:\"%ci\"");
+            return Execute(NewProcessInfo(buffer.ToString(), result)).StandardOutput;
+        }
 
 		/// <summary>
 		/// Get the hash of the latest commit in the local repository

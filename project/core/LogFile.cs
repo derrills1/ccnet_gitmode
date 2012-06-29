@@ -66,7 +66,7 @@ namespace ThoughtWorks.CruiseControl.Core
 
 		private string CreateFailedBuildLogFileName()
 		{
-			return string.Format("{0}{1}build.{2}.xml", FilenamePrefix, FilenameFormattedDateString), _label;
+			return string.Format("{0}{1}build.{2}.xml", FilenamePrefix, FilenameFormattedDateString, _label);
 		}
 
 		private string CreateSuccessfulBuildLogFileName()

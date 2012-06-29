@@ -15,7 +15,8 @@ namespace ThoughtWorks.CruiseControl.WebDashboard.Dashboard
 		public string GetPrettyBuildName(IBuildSpecifier buildSpecifier, IFormatProvider formatter)
 		{
 			LogFile logFile = new LogFile(buildSpecifier.BuildName, formatter);
-			return string.Format("{0} ({1})", logFile.FormattedDateString, logFile.Succeeded ? logFile.Label : "Failed");	
+			//return string.Format("{0} ({1})", logFile.FormattedDateString, logFile.Succeeded ? logFile.Label : "Failed");	
+			return string.Format("{0} ({1})", logFile.FormattedDateString, logFile.Label);	
 		}
 
 		public string GetCssClassForBuildLink(IBuildSpecifier buildSpecifier)

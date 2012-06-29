@@ -12,7 +12,7 @@ namespace ThoughtWorks.CruiseControl.Core
 	{
 		public const string FilenamePrefix = "log";
 		public const string FilenameDateFormat = "yyyyMMddHHmmss";
-		public static readonly Regex BuildNumber = new Regex(@"Lbuild\.(.+)\.xml");
+		public static readonly Regex BuildNumber = new Regex(@"L{0,1}build\.(.+)\.xml");
 
 		private readonly DateTime _date;
 		private readonly string _label;
@@ -66,7 +66,7 @@ namespace ThoughtWorks.CruiseControl.Core
 
 		private string CreateFailedBuildLogFileName()
 		{
-			return string.Format("{0}{1}.xml", FilenamePrefix, FilenameFormattedDateString);
+			return string.Format("{0}{1}build.{2}.xml", FilenamePrefix, FilenameFormattedDateString), _label;
 		}
 
 		private string CreateSuccessfulBuildLogFileName()

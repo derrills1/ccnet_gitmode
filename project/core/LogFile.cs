@@ -23,8 +23,8 @@ namespace ThoughtWorks.CruiseControl.Core
 		{
 			ValidateFilename(filename);
 			_date = ParseDate(filename);
-			_label = ParseLabel(filename);
 			_succeeded = IsSuccessful(filename);
+			_label = ParseLabel(filename);			
 		}
 
 		public LogFile(string filename, IFormatProvider formatter) : this(filename)
@@ -110,7 +110,10 @@ namespace ThoughtWorks.CruiseControl.Core
 		{
 			string value = BuildNumber.Match(filename).Groups[1].Value;
 			if (value == null || value.Length == 0)
-				return "0";
+				if (_succeeded)
+					return "0";
+				else
+					return "Failed";
 
 			return value;
 		}
